@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema({
     },
     monthlyRequestCount: {
         type : Number,
-        default : 0,
+        default : 100,
     },
     nextBillingDate: {
         type: Date,
@@ -54,6 +54,10 @@ const userSchema = new mongoose.Schema({
     ],
 },{
     timestamps: true
+})
+
+userSchema.virtual('isTrialActive').get(function(){
+    return this.trialActive && this.trialExpires > Date.now()
 })
 
 const User = mongoose.model('User', userSchema) ; 

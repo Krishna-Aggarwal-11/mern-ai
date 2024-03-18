@@ -84,7 +84,7 @@ const logout = asyncHandler(async (req, res , next) => {
 
 const userProfile = asyncHandler(async (req, res , next) => {
 
-    const user = await User.findById(req?.user?.id).select('-password')
+    const user = await User.findById(req?.user?.id).select('-password').populate("payment").populate("history")
     if (user) {
         res.status(200).json({
             status : true,
@@ -96,6 +96,19 @@ const userProfile = asyncHandler(async (req, res , next) => {
     }
 })
 
+const checkAuth = asyncHandler(async (req, res , next) => {
+    const decoded = jwt.verify(req.cookies.token, process.env.JWT_SECRET)
+    if (decoded) {
+        res.json({
+            isAuthenticated : true
+        })
+    }else{
+        res.json({
+            isAuthenticated : false
+        })
+    }
+})
+
 
 
 
@@ -103,5 +116,6 @@ module.exports = {
     register,
     login,
     logout,
-    userProfile
+    userProfile,
+    checkAuth
 }

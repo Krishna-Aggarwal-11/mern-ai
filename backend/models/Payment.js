@@ -27,6 +27,13 @@ const paymentSchema = new mongoose.Schema({
         type : Number,
         required: true,
     },
+    monthlyRequestCount: {
+        type : Number,
+    },
+    email: {
+        type: String,
+        required: true
+    },
     
 },{
     timestamps: true

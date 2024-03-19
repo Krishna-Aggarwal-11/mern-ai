@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { loginUser } from "../../api/users/userApi";
 import { Link, useNavigate } from "react-router-dom";
 import StatusMessage from "../Alert/StatusMessage";
 import { useMutation } from "@tanstack/react-query";
+import { useAuth } from "../../AuthContext/AuthContext";
 
 // Validation schema using Yup
 const validationSchema = Yup.object({
@@ -16,6 +17,14 @@ const validationSchema = Yup.object({
 
 const Login = () => {
     const navigate = useNavigate();
+
+    const {isAuthenticated , login} = useAuth();
+
+    useEffect(() => {
+        if (isAuthenticated) {
+          navigate("/dashboard");
+        }
+      }, [isAuthenticated]);
 
     const mutation = useMutation({ mutationFn: loginUser });
 
@@ -33,6 +42,12 @@ const Login = () => {
       navigate("/dashboard");
     },
   });
+
+  useEffect(() => {
+    if (mutation.isSuccess) {
+      login();
+    }
+  }, [mutation.isSuccess]);
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center">

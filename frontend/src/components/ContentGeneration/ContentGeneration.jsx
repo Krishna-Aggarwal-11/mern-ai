@@ -2,9 +2,23 @@ import React, { useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Link } from "react-router-dom";
+import { generateContent } from "../../api/openAi/openAi";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import StatusMessage from "../Alert/StatusMessage";
+import { profileUser } from "../../api/users/userApi";
 
 const BlogPostAIAssistant = () => {
   const [generatedContent, setGeneratedContent] = useState("");
+
+  const { isLoading, isError, data, error } = useQuery({
+    queryFn: profileUser,
+    queryKey: ["profile"],
+  });
+
+  const mutation = useMutation({
+    mutationFn: generateContent})
+    
+  
 
   // Formik setup for handling form data
   const formik = useFormik({
@@ -21,9 +35,19 @@ const BlogPostAIAssistant = () => {
     onSubmit: (values) => {
       // Simulate content generation based on form values
       console.log(values);
-      setGeneratedContent(`Generated content for prompt: ${values.prompt}`);
+      mutation.mutate(`Generate a blog post based on ${values.prompt} , ${values.tone} and ${values.category}`);
+      setGeneratedContent(`${mutation?.data}`);
     },
   });
+
+  if (isLoading) {
+    return <StatusMessage type="loading" message="Loading..." />;
+  } 
+  else if (isError) {
+    return (
+      <StatusMessage type="error" message={error?.response?.data?.message} />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-900 flex justify-center items-center p-6">
@@ -31,9 +55,26 @@ const BlogPostAIAssistant = () => {
         <h2 className="text-3xl font-extrabold text-gray-800 mb-6 text-center">
           AI Blog Post Generator
         </h2>
-
+        {mutation?.isPending && (
+          <StatusMessage type="loading" message="Generating content..." />
+        )}
+        {mutation?.isSuccess && (
+          <StatusMessage type="success" message="Content generated successfully" />
+        )}
+        {mutation?.isError && (
+          <StatusMessage type="error" message={mutation?.error?.response?.data?.message} />
+        )}
         {/* Static display for Plan and Credits */}
-        {/* ... */}
+        {
+          <div className="flex  my-6">
+            <div className="mr-5">
+              <span className="text-sm font-semibold bg-green-200 px-4 py-2 rounded-full ">Plan : {data.user?.subscription}</span>
+            </div>
+            <div className="mr-5">
+              <span className="text-sm font-semibold bg-green-200 px-4 py-2 rounded-full ">Credits : {data.user?.apiRequestCount} / {data.user?.monthlyRequestCount}</span>
+            </div>
+          </div>
+        }
 
         {/* Form for generating content */}
         <form onSubmit={formik.handleSubmit} className="space-y-4">
@@ -120,7 +161,7 @@ const BlogPostAIAssistant = () => {
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
               Generated Content:
             </h3>
-            <p className="text-gray-600">{generatedContent}</p>
+            <p className="text-gray-600">{mutation?.data}</p>
           </div>
         )}
       </div>

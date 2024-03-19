@@ -121,6 +121,7 @@ const handleFreeSubscription = asyncHandler(async (req, res) => {
 
 
             const newPayment = await Payment.create({
+                email : user.email,
                 user : user._id,
                 subscriptionPlan : "Free",
                 amount : 0,

@@ -1,89 +1,65 @@
 import React from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { loginUser } from "../../api/users/userApi";
 import { Link, useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
-import { registerUser } from "../../api/users/userApi";
 import StatusMessage from "../Alert/StatusMessage";
+import { useMutation } from "@tanstack/react-query";
 
-// Validation schema
+// Validation schema using Yup
 const validationSchema = Yup.object({
   email: Yup.string()
     .email("Enter a valid email")
     .required("Email is required"),
   password: Yup.string().required("Password is required"),
-  username: Yup.string().required("Username is required"),
 });
 
-const Registration = () => {
-  const navigate = useNavigate();
+const Login = () => {
+    const navigate = useNavigate();
 
-  const mutation = useMutation({ mutationFn: registerUser });
+    const mutation = useMutation({ mutationFn: loginUser });
 
   // Formik setup for form handling
   const formik = useFormik({
     initialValues: {
       email: "",
       password: "",
-      username: "",
     },
     validationSchema: validationSchema,
     onSubmit: (values) => {
-      // Here, handle the form submission
-      console.log("Form values", values);
+      // Here, you would typically handle form submission
       mutation.mutate(values);
-      // Simulate successful registration
-      navigate("/login"); // Redirect user to login page
+      // Simulate login success and navigate to dashboard
+      navigate("/dashboard");
     },
-});
+  });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900">
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center">
       <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8 m-4">
         <h2 className="text-2xl font-bold text-center text-gray-800 mb-8">
-          Create an Account
+          Login to Your Account
         </h2>
-        <p className="text-center text-gray-600 mb-4">
-          Create an account to get free access for 3 days. No credit card
-          required.
-        </p>
+
         {mutation.isPending && (
-          <StatusMessage type="loading" message="Creating account..." />
+          <StatusMessage type="loading" message="Logging in account..." />
         )}
         {mutation.isError && (
           <StatusMessage type="error" message={mutation.error?.response?.data?.message} />
         )}
         {mutation.isSuccess && (
-          <StatusMessage type="success" message=" Account created successfully" />
+          <StatusMessage type="success" message=" Account logged in successfully" />
         )}
-        <form onSubmit={formik.handleSubmit} className="space-y-6">
-          {/* Username input field */}
-          <div>
-            <label
-              htmlFor="username"
-              className="text-sm font-medium text-gray-700 block mb-2"
-            >
-              Username
-            </label>
-            <input
-              type="text"
-              id="username"
-              {...formik.getFieldProps("username")}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:border-indigo-500"
-              placeholder="John Doe"
-            />
-            {formik.touched.username && formik.errors.username && (
-              <div className="text-red-500 mt-1">{formik.errors.username}</div>
-            )}
-          </div>
 
+        {/* Form for login */}
+        <form onSubmit={formik.handleSubmit} className="space-y-6">
           {/* Email input field */}
           <div>
             <label
               htmlFor="email"
               className="text-sm font-medium text-gray-700 block mb-2"
             >
-              Email Address
+              Your Email
             </label>
             <input
               type="email"
@@ -103,7 +79,7 @@ const Registration = () => {
               htmlFor="password"
               className="text-sm font-medium text-gray-700 block mb-2"
             >
-              Password
+              Your Password
             </label>
             <input
               type="password"
@@ -116,24 +92,28 @@ const Registration = () => {
             )}
           </div>
 
+          <div className="flex items-center justify-between">
+            <div className="text-sm">
+              <Link
+                to="/register"
+                className="font-medium text-indigo-600 hover:text-indigo-500"
+              >
+                Don't have an account? Register
+              </Link>
+            </div>
+          </div>
+
+          {/* Submit button */}
           <button
             type="submit"
             className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-purple-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
-            Register
+            Sign in
           </button>
         </form>
-        <div className="text-sm mt-2">
-          <Link
-            to="/login"
-            className="font-medium text-indigo-600 hover:text-indigo-500"
-          >
-            Already have an account? Login
-          </Link>
-        </div>
       </div>
     </div>
   );
 };
 
-export default Registration;
+export default Login;
